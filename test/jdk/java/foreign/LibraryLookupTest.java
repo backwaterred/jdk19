@@ -40,7 +40,7 @@ import static org.testng.Assert.*;
 /*
  * @test
  * @enablePreview
- * @requires ((os.arch == "amd64" | os.arch == "x86_64") & sun.arch.data.model == "64") | os.arch == "aarch64" | os.arch == "ppc64le"
+ * @requires ((os.arch == "amd64" | os.arch == "x86_64") & sun.arch.data.model == "64") | os.arch == "aarch64" | os.arch == "ppc64le" | os.arch == "ppc64"
  * @run testng/othervm --enable-native-access=ALL-UNNAMED LibraryLookupTest
  */
 public class LibraryLookupTest {
