@@ -38,6 +38,7 @@ import jdk.internal.foreign.abi.DowncallLinker;
 import jdk.internal.foreign.abi.UpcallLinker;
 import jdk.internal.foreign.abi.SharedUtils;
 import jdk.internal.foreign.abi.VMStorage;
+import jdk.internal.foreign.abi.ppc64.aix.AixPPC64CallArranger;
 import jdk.internal.foreign.abi.ppc64.linux.LinuxPPC64CallArranger;
 import jdk.internal.foreign.Utils;
 
