@@ -29,11 +29,12 @@ import static java.lang.foreign.ValueLayout.ADDRESS;
 import static sun.security.action.GetPropertyAction.privilegedGetProperty;
 
 public enum CABI {
-    SysV,
-    Win64,
+    AixPPC64,
     LinuxAArch64,
+    LinuxPPC64le,
     MacOsAArch64,
-    LinuxPPC64le;
+    SysV,
+    Win64;
 
     private static final CABI current;
 
@@ -56,6 +57,8 @@ public enum CABI {
                 // The Linux ABI follows the standard AAPCS ABI
                 current = LinuxAArch64;
             }
+        } else if (os.equals("aix") && arch.equals("ppc64")) {
+            current = AixPPC64;
         } else if (arch.equals("ppc64le")) {
             // 64-Bit ELF V2 ABI
             current = LinuxPPC64le;
