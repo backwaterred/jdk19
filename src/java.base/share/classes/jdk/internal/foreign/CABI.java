@@ -57,7 +57,7 @@ public enum CABI {
                 // The Linux ABI follows the standard AAPCS ABI
                 current = LinuxAArch64;
             }
-        } else if (os.equals("aix") && arch.equals("ppc64")) {
+        } else if (os.equals("AIX") && arch.equals("ppc64")) {
             current = AixPPC64;
         } else if (arch.equals("ppc64le")) {
             // 64-Bit ELF V2 ABI
