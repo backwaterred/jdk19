@@ -29,5 +29,4 @@
  #endif
 
  EXPORT void f() { }
- EXPORT int c = 42;
-
+ EXPORT int c = 0xFF0000FF;

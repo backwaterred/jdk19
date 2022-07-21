@@ -63,6 +63,6 @@ public class TestClassLoaderFindNative {
                 SymbolLookup.loaderLookup().lookup("c").get().address(),
                 ValueLayout.JAVA_INT.byteSize(),
                 MemorySession.global());
-        assertEquals(segment.get(JAVA_BYTE, 0), 42);
+        assertEquals(segment.get(JAVA_BYTE, 0), -1);
     }
 }
