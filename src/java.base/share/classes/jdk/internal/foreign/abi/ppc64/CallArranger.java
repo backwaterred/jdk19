@@ -75,7 +75,8 @@ public abstract class CallArranger {
         new VMStorage[] { r0, r2, r3, r4, r5, r6, r7, r8, r9, r10, r11, r12 }, // volatile GP
         new VMStorage[] { f0, f2, f3, f4, f5, f6, f7, f8, f9, f10, f11, f12, f13 }, // volatile FP
         16,  // Stack is always 16 byte aligned on PPC64
-        96,  // ABI v2 header (Little Endian)
+        // 96,  // ABI v2 header (Little Endian)
+        112,  // Shadow Space: AIX Assember Language Reference
         r12, // target addr reg
         r3   // return buffer addr reg // FIXME: Check!
     );
