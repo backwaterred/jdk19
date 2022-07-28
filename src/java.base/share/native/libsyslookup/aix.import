@@ -1,0 +1,3 @@
+# autoload
+#! /lib/libc.a(shr_64.o)
+#! /lib/libm.a(shr_64.o)

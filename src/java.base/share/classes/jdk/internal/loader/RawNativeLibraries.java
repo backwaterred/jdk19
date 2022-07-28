@@ -167,6 +167,7 @@ public final class RawNativeLibraries {
 
         @Override
         public long find(String name) {
+            System.out.println("[RawNativeLibImpl::find] finding " + name + " in " + this.name + " with handle " + handle);
             return findEntry0(handle, name);
         }
 

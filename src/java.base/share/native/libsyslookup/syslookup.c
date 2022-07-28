@@ -31,3 +31,11 @@
 char* syslookup() {
   return "syslookup";
 }
+
+#include <math.h>
+// The AIX Linker performs 'GC' on symbols not referenced by the code
+// in order to keep the TOC size low. We evade that mechanism by adding
+// refereces to at least one symbol froma lib we want to keep around.
+double dummy_libm(double input) {
+  return log(input);
+}
