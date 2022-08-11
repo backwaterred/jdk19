@@ -116,11 +116,10 @@ int NativeCallingConvention::calling_convention(BasicType* sig_bt, VMRegPair* ou
         if (reg->is_stack())
           stk_slots += 2;
         break;
-      }
+      } // else fall through with CCallingConventionRequiresIntsAsLongs == true
       case T_LONG:
       case T_DOUBLE: {
-        assert((i + 1) < num_args, "check index < args");
-        assert(sig_bt[i + 1] == T_VOID, "expecting half");
+        assert((i + 1) < num_args && sig_bt[i + 1] == T_VOID, "expecting half");
         assert(src_pos < _input_regs.length(), "oob");
         VMReg reg = _input_regs.at(src_pos++);
         out_regs[i].set2(reg);
@@ -129,7 +128,10 @@ int NativeCallingConvention::calling_convention(BasicType* sig_bt, VMRegPair* ou
         break;
       }
       case T_VOID: // Halves of longs and doubles
-        assert(i != 0 && (sig_bt[i - 1] == T_LONG || sig_bt[i - 1] == T_DOUBLE), "expecting half");
+        assert(i != 0 && (sig_bt[i - 1] == T_LONG ||
+                          sig_bt[i - 1] == T_DOUBLE ||
+                          (CCallingConventionRequiresIntsAsLongs && sig_bt[i - 1] == BasicType::T_INT)),
+               "expecting half");
         out_regs[i].set_bad();
         break;
       default:

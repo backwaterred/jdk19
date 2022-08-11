@@ -54,7 +54,7 @@ JNI_ENTRY(jlong, NEP_makeDowncallStub(JNIEnv* env, jclass _unused, jobject metho
     basic_type[bt_idx++] = bt;
     input_regs.push(ForeignGlobals::parse_vmstorage(arg_moves_oop->obj_at(i)));
 
-    if (bt == BasicType::T_DOUBLE || bt == BasicType::T_LONG) {
+    if (bt == BasicType::T_DOUBLE || bt == BasicType::T_LONG || (CCallingConventionRequiresIntsAsLongs && bt == BasicType::T_INT)) {
       basic_type[bt_idx++] = T_VOID;
       // we only need these in the basic type
       // NativeCallingConvention ignores them, but they are needed

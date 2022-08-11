@@ -4638,6 +4638,9 @@ int java_lang_invoke_MethodType::ptype_slot_count(oop mt) {
   for (int i = 0; i < count; i++) {
     BasicType bt = java_lang_Class::as_BasicType(pts->obj_at(i));
     slots += type2size[bt];
+    if (CCallingConventionRequiresIntsAsLongs && bt == BasicType::T_INT) {
+      slots++;
+    }
   }
   return slots;
 }
