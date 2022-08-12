@@ -211,6 +211,7 @@ $(eval $(call SetupJdkLibrary, BUILD_SYSLOOKUPLIB, \
     NAME := syslookup, \
     CFLAGS := $(CFLAGS_JDKLIB), \
     CXXFLAGS := $(CXXFLAGS_JDKLIB), \
+    CXXFLAGS_aix := -shared, \
     LDFLAGS := $(LDFLAGS_JDKLIB), \
     LDFLAGS_linux := -Wl$(COMMA)--no-as-needed, \
     LDFLAGS_aix := -brtl -bexpfull, \
