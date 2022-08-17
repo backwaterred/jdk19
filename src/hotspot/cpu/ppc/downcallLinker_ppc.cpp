@@ -314,5 +314,6 @@ void DowncallStubGenerator::generate() {
   //////////////////////////////////////////////////////////////////////////////
 
   __ flush();
+  tty->print_cr("Calling decode from downcallLinker\n");
   Disassembler::decode((u_char*)start, (u_char*)__ pc(), tty);
 }
