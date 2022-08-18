@@ -193,11 +193,20 @@ void DowncallStubGenerator::generate() {
   }
   __ block_comment("} argument shuffle");
 
-  // __ mtctr(_abi._target_addr_reg);
-  // __ bctrl();
-
-  // Set LR so return is here?
-  __ call_c_and_return_to_caller(_abi._target_addr_reg);
+  #ifdef _AIX
+    // AIX passes functions as:
+    // struct function_descriptor {
+    //   fn_ptr
+    //   toc_ptr
+    //   env_ptr
+    // }
+    // see call_c_and_return_to_caller(_abi._target_addr_reg);
+    __ ld(R2_TOC, in_bytes(FunctionDescriptor::toc_offset()), _abi._target_addr_reg);
+    __ ld(R11, in_bytes(FunctionDescriptor::env_offset()), _abi._target_addr_reg);
+    __ ld(_abi._target_addr_reg, in_bytes(FunctionDescriptor::entry_offset()), _abi._target_addr_reg);
+  #endif
+  __ mtctr(_abi._target_addr_reg);
+  __ bctrl();
   __ nop(); // needed?
 
   if (!_needs_return_buffer) {
@@ -318,6 +327,5 @@ void DowncallStubGenerator::generate() {
   //////////////////////////////////////////////////////////////////////////////
 
   __ flush();
-  tty->print_cr("Calling decode from downcallLinker\n");
-  Disassembler::decode((u_char*)start, (u_char*)__ pc(), tty);
+  // Disassembler::decode((u_char*)start, (u_char*)__ pc(), tty);
 }
