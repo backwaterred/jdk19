@@ -193,8 +193,19 @@ void DowncallStubGenerator::generate() {
   }
   __ block_comment("} argument shuffle");
 
+  #ifdef _AIX
+    // AIX passes functions as:
+    // struct function_descriptor {
+    //   fn_ptr
+    //   toc_ptr
+    //   env_ptr
+    // }
+    __ ld(r2, 1, _abi._target_addr_reg); // r2 <- r12[1]
+    __ ld(_abi._target_addr_reg, 0, abi._target_addr_reg);  // r12 <- (r12)
+  #endif
   __ mtctr(_abi._target_addr_reg);
   __ bctrl();
+  __ nop(); // needed?
 
   if (!_needs_return_buffer) {
     // Unpack native results.
