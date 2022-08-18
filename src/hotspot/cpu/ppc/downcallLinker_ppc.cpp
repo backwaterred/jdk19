@@ -200,7 +200,7 @@ void DowncallStubGenerator::generate() {
     //   toc_ptr
     //   env_ptr
     // }
-    // see call_c_and_return_to_caller(_abi._target_addr_reg);
+    // see eg. call_c_and_return_to_caller(_abi._target_addr_reg);
     __ ld(R2_TOC, in_bytes(FunctionDescriptor::toc_offset()), _abi._target_addr_reg);
     __ ld(R11, in_bytes(FunctionDescriptor::env_offset()), _abi._target_addr_reg);
     __ ld(_abi._target_addr_reg, in_bytes(FunctionDescriptor::entry_offset()), _abi._target_addr_reg);
