@@ -200,8 +200,9 @@ void DowncallStubGenerator::generate() {
     //   toc_ptr
     //   env_ptr
     // }
-    __ ld(r2, 1, _abi._target_addr_reg); // r2 <- r12[1]
-    __ ld(_abi._target_addr_reg, 0, abi._target_addr_reg);  // r12 <- (r12)
+    __ ld(R2, 1, _abi._target_addr_reg); // r2 <- r12[1]
+    __ ld(R11, 2, _abi._target_addr_reg); // r11 <- r12[2]
+    __ ld(_abi._target_addr_reg, 0, _abi._target_addr_reg);  // r12 <- (r12)
   #endif
   __ mtctr(_abi._target_addr_reg);
   __ bctrl();
