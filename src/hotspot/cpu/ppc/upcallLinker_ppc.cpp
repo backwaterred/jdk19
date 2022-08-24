@@ -125,10 +125,12 @@ address UpcallLinker::make_upcall_stub(jobject receiver, Method* entry,
   const CallRegs call_regs = ForeignGlobals::parse_call_regs(jconv);
   CodeBuffer buffer("upcall_stub", /* code_size = */ 2048, /* locs_size = */ 1024);
 
-  Register shuffle_reg = R11; // TODO: Verify
+  Register rtmp1 = R5;
+  Register rtmp2 = R6;
+  Register rshuffle = R11; // TODO: Verify
   JavaCallingConvention out_conv;
   NativeCallingConvention in_conv(call_regs._arg_regs);
-  ArgumentShuffle arg_shuffle(in_sig_bt, total_in_args, out_sig_bt, total_out_args, &in_conv, &out_conv, shuffle_reg->as_VMReg());
+  ArgumentShuffle arg_shuffle(in_sig_bt, total_in_args, out_sig_bt, total_out_args, &in_conv, &out_conv, rshuffle->as_VMReg());
   int stack_slots = SharedRuntime::out_preserve_stack_slots() + arg_shuffle.out_arg_stack_slots();
   int out_arg_area = align_up(stack_slots * VMRegImpl::stack_slot_size, StackAlignmentInBytes);
 
@@ -168,6 +170,7 @@ address UpcallLinker::make_upcall_stub(jobject receiver, Method* entry,
   frame_size = align_up(frame_size, StackAlignmentInBytes);
 
   // The space we have allocated will look like:
+  // TODO: Is this correct on PPC64/LE?
   //
   //
   // FP-> |                     |
@@ -196,10 +199,8 @@ address UpcallLinker::make_upcall_stub(jobject receiver, Method* entry,
 
   MacroAssembler* _masm = new MacroAssembler(&buffer);
   address start = __ pc();
-  // __ enter(); // TODO: set up frame
+  __ push_frame(frame_size, rtmp1);
   assert((abi._stack_alignment_bytes % 16) == 0, "must be 16 byte aligned");
-  // allocate frame (frame_size is also aligned, so stack is still aligned)
-  __ subi(R1_SP, R1_SP, frame_size);
 
   // we have to always spill args since we need to do a call to get the thread
   // (and maybe attach it).
@@ -207,35 +208,50 @@ address UpcallLinker::make_upcall_stub(jobject receiver, Method* entry,
   preserve_callee_saved_registers(_masm, abi, reg_save_area_offset);
 
   __ block_comment("{ on_entry");
-  __ ld(R3, CAST_FROM_FN_PTR(uint64_t, UpcallLinker::on_entry), R0);
-  __ mtctr(R3); // ctr <- CAST_FROM_FN_PTR(uint64_t, UpcallLinker::on_entry)
-  __ ld(R3, frame_data_offset, R1_SP); // arg_0 <- ...
-  __ bctrl(); // Call UpcallLinker::on_entry
-  __ mr(R13, R3); // Store thread-pointer from UpcallLinker::on_entry
-  // __ reinit_heapbase(); // TODO
+  //     On Entry:
+  //     - Call UpcallLinker::on_entry to get thread pointer.
+  //     - Store thread pointer in R16.
+  __ andi(rtmp1, rtmp1, 0);                     // rtmp1 <- 0
+  __ add_const_optimized(rtmp1, rtmp1,          // rtmp1 <- &UpcallLinker::on_entry
+                         CAST_FROM_FN_PTR(uint64_t, UpcallLinker::on_entry), rtmp2, false);
+  __ mtctr(rtmp1);                              // CTR <- &UpcallLinker::on_entry
+  __ ld(R3, frame_data_offset, R1_SP);          // arg0 <- current-offset
+  __ bctrl();                                   // UpcallLinker::on_entry(FrameData* context)
+  __ mr(R16_thread, R3);                        // R16 <- thread_ptr
   __ block_comment("} on_entry");
 
   __ block_comment("{ argument shuffle");
+  //     Argument Shuffle
+  //     TODO: What does this do?
   arg_spilller.generate_fill(_masm, arg_save_area_offset);
   if (needs_return_buffer) {
     assert(ret_buf_offset != -1, "no return buffer allocated");
-    // TODO PPC
+    // TODO Implement on PPC
+    __ should_not_reach_here();
   }
-  arg_shuffle.generate(_masm, shuffle_reg->as_VMReg(), abi._shadow_space_bytes, 0);
+  arg_shuffle.generate(_masm, rshuffle->as_VMReg(), abi._shadow_space_bytes, 0);
   __ block_comment("} argument shuffle");
 
   __ block_comment("{ receiver ");
-    // TODO PPC
+  //     Receiver
+  //     - Load reciever (JObject) metadata
+  __ add_const_optimized(rshuffle, rshuffle,       // rshuffle <- &reciever
+                         receiver, rtmp1, false);
+  __ resolve_jobject(rshuffle, rtmp1, rtmp2);      // rshuffle <- resolved oop with base rshuffle
   __ block_comment("} receiver ");
 
-  // TODO: PPC
-  // __ mov_metadata(rmethod, entry);
-  // __ str(rmethod, Address(rthread, JavaThread::callee_target_offset())); // just in case callee is deoptimized
+  __ block_comment("{ perform-upcall");
+  //     Perform Upcall
+  //     - Call the method stored in entry, after loading thread pointer
+  //       and reciever-object data
+  if (!entry->has_native()) {
+    __ call_VM(rshuffle, entry->interpreter_entry(), false);  // call_VM(Reg oop_result, address entry_point, false)
+  } else {
+    __ call_VM(rshuffle, entry->native_function(), false);    // call_VM(Reg oop_result, address entry_point, false)
+  }
+  __ block_comment("} perform-upcall");
 
-  // __ ldr(rscratch1, Address(rmethod, Method::from_compiled_offset()));
-  // __ blr(rscratch1);
-
-    // return value shuffle
+  // return value shuffle
   if (!needs_return_buffer) {
 #ifdef ASSERT
     if (call_regs._ret_regs.length() == 1) { // 0 or 1
@@ -248,12 +264,12 @@ address UpcallLinker::make_upcall_stub(jobject receiver, Method* entry,
         case T_INT:
         case T_LONG:
         // TODO PPC
-        // j_expected_result_reg = r0->as_VMReg();
+        j_expected_result_reg = R3->as_VMReg();
         break;
         case T_FLOAT:
         case T_DOUBLE:
           // TODO PPC
-          // j_expected_result_reg = v0->as_VMReg();
+          j_expected_result_reg = F1->as_VMReg();
           break;
         default:
           fatal("unexpected return type: %s", type2name(ret_type));
@@ -272,7 +288,12 @@ address UpcallLinker::make_upcall_stub(jobject receiver, Method* entry,
   result_spiller.generate_spill(_masm, res_save_area_offset);
 
   __ block_comment("{ on_exit");
-  // TODO PPC
+  //     On Exit
+  //     Clean up stack.
+  //     - Remove stack frame.
+  //     - Restore !!!
+  // TODO
+  __ pop_frame();
   __ block_comment("} on_exit");
 
   restore_callee_saved_registers(_masm, abi, reg_save_area_offset);
