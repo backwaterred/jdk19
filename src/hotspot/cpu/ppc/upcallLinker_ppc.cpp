@@ -220,6 +220,8 @@ address UpcallLinker::make_upcall_stub(jobject receiver, Method* entry,
   __ mr(R16_thread, R3);                        // R16 <- thread_ptr
   __ block_comment("} on_entry");
 
+  __ should_not_reach_here();
+
   __ block_comment("{ argument shuffle");
   //     Argument Shuffle
   //     TODO: What does this do?
@@ -229,26 +231,32 @@ address UpcallLinker::make_upcall_stub(jobject receiver, Method* entry,
     // TODO Implement on PPC
     __ should_not_reach_here();
   }
-  arg_shuffle.generate(_masm, rshuffle->as_VMReg(), abi._shadow_space_bytes, 0);
+  arg_shuffle.generate(_masm, rshuffle->as_VMReg(), 0, abi._shadow_space_bytes);
   __ block_comment("} argument shuffle");
 
   __ block_comment("{ receiver ");
   //     Receiver
   //     - Load reciever (JObject) metadata
-  __ add_const_optimized(rshuffle, rshuffle,       // rshuffle <- &reciever
+  __ add_const_optimized(rshuffle, rshuffle,        // rshuffle <- &reciever
                          receiver, rtmp1, false);
-  __ resolve_jobject(rshuffle, rtmp1, rtmp2);      // rshuffle <- resolved oop with base rshuffle
+  __ resolve_jobject(rshuffle, rtmp1,        // rshuffle <- resolved oop with base rshuffle
+                     R14, MacroAssembler::PRESERVATION_FRAME_LR); // TODO: Set Preservation Level, R14 == nvtemp
+  __ mr(R4, rshuffle);
   __ block_comment("} receiver ");
 
   __ block_comment("{ perform-upcall");
   //     Perform Upcall
   //     - Call the method stored in entry, after loading thread pointer
   //       and reciever-object data
-  if (!entry->has_native()) {
-    __ call_VM(rshuffle, entry->interpreter_entry(), false);  // call_VM(Reg oop_result, address entry_point, false)
-  } else {
-    __ call_VM(rshuffle, entry->native_function(), false);    // call_VM(Reg oop_result, address entry_point, false)
-  }
+  __ andi(rtmp1, rtmp1, 0);                     // rtmp1 <- 0
+  __ add_const_optimized(rtmp1, rtmp1, (intptr_t)entry, rtmp2, false);
+  __ ld(rtmp1, 0, rtmp1);
+  __ add_const_optimized(rtmp1, rtmp1, in_bytes(Method::from_compiled_offset()),
+                         rtmp2, false);
+  __ ld(rtmp1, 0, rtmp1);
+  __ mtctr(rtmp1);
+  __ bctrl();
+  // TODO: Handle rtn value
   __ block_comment("} perform-upcall");
 
   // return value shuffle
