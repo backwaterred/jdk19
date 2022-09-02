@@ -299,7 +299,7 @@ address UpcallLinker::make_upcall_stub(jobject receiver, Method* entry,
   //     - Restore !!!
   // TODO
   __ pop_frame();
-  assert(NULL != NULL, "Leaving on_exit");
+  __ should_not_reach_here();
   __ block_comment("} on_exit");
 
   restore_callee_saved_registers(_masm, abi, reg_save_area_offset);
@@ -321,7 +321,6 @@ address UpcallLinker::make_upcall_stub(jobject receiver, Method* entry,
   // __ verify_oop(???);
   // TODO: PPC
   __ should_not_reach_here();
-
   __ block_comment("} exception handler");
 
   _masm->flush();
