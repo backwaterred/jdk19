@@ -254,6 +254,7 @@ address UpcallLinker::make_upcall_stub(jobject receiver, Method* entry,
   __ mtctr(rtmp1);
   __ bctrl();
   // TODO: Handle rtn value
+  __ should_not_reach_here();
   __ block_comment("} perform-upcall");
 
   // return value shuffle
