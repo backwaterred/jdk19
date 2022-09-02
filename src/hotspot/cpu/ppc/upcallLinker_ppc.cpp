@@ -222,7 +222,6 @@ address UpcallLinker::make_upcall_stub(jobject receiver, Method* entry,
 
   __ block_comment("{ argument shuffle");
   //     Argument Shuffle
-  assert(NULL != NULL, "Entering arg shuffle");
   arg_spilller.generate_fill(_masm, arg_save_area_offset);
   if (needs_return_buffer) {
     assert(ret_buf_offset != -1, "no return buffer allocated");
