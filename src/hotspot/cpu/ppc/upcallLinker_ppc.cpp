@@ -245,7 +245,6 @@ address UpcallLinker::make_upcall_stub(jobject receiver, Method* entry,
   //     Perform Upcall
   //     - Call the method stored in entry, after loading thread pointer
   //       and reciever-object data
-  assert(NULL != NULL, "Entering perform-upcall");
   __ andi(rtmp1, rtmp1, 0);                     // rtmp1 <- 0
   __ add_const_optimized(rtmp1, rtmp1, (intptr_t)entry, rtmp2, false);
   __ ld(rtmp1, 0, rtmp1);
@@ -294,6 +293,7 @@ address UpcallLinker::make_upcall_stub(jobject receiver, Method* entry,
   result_spiller.generate_spill(_masm, res_save_area_offset);
 
   __ block_comment("{ on_exit");
+  assert(NULL != NULL, "Entering on_exit");
   //     On Exit
   //     Clean up stack.
   //     - Remove stack frame.
