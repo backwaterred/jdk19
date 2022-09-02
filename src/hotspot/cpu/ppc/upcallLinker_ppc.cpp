@@ -211,7 +211,6 @@ address UpcallLinker::make_upcall_stub(jobject receiver, Method* entry,
   //     On Entry:
   //     - Call UpcallLinker::on_entry to get thread pointer.
   //     - Store thread pointer in R16.
-  assert(NULL != NULL, "Entering on_entry");
   __ andi(rtmp1, rtmp1, 0);                     // rtmp1 <- 0
   __ add_const_optimized(rtmp1, rtmp1,          // rtmp1 <- &UpcallLinker::on_entry
                          CAST_FROM_FN_PTR(uint64_t, UpcallLinker::on_entry), rtmp2, false);
