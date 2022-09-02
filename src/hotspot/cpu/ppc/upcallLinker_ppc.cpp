@@ -234,7 +234,6 @@ address UpcallLinker::make_upcall_stub(jobject receiver, Method* entry,
   __ block_comment("{ receiver ");
   //     Receiver
   //     - Load reciever (JObject) metadata
-  assert(NULL != NULL, "Entering receiver");
   __ add_const_optimized(rshuffle, rshuffle,        // rshuffle <- &reciever
                          receiver, rtmp1, false);
   __ resolve_jobject(rshuffle, rtmp1,        // rshuffle <- resolved oop with base rshuffle
@@ -246,6 +245,7 @@ address UpcallLinker::make_upcall_stub(jobject receiver, Method* entry,
   //     Perform Upcall
   //     - Call the method stored in entry, after loading thread pointer
   //       and reciever-object data
+  assert(NULL != NULL, "Entering perform-upcall");
   __ andi(rtmp1, rtmp1, 0);                     // rtmp1 <- 0
   __ add_const_optimized(rtmp1, rtmp1, (intptr_t)entry, rtmp2, false);
   __ ld(rtmp1, 0, rtmp1);
