@@ -293,13 +293,13 @@ address UpcallLinker::make_upcall_stub(jobject receiver, Method* entry,
   result_spiller.generate_spill(_masm, res_save_area_offset);
 
   __ block_comment("{ on_exit");
-  assert(NULL != NULL, "Entering on_exit");
   //     On Exit
   //     Clean up stack.
   //     - Remove stack frame.
   //     - Restore !!!
   // TODO
   __ pop_frame();
+  assert(NULL != NULL, "Leaving on_exit");
   __ block_comment("} on_exit");
 
   restore_callee_saved_registers(_masm, abi, reg_save_area_offset);
