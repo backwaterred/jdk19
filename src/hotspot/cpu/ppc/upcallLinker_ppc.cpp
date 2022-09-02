@@ -211,6 +211,7 @@ address UpcallLinker::make_upcall_stub(jobject receiver, Method* entry,
   //     On Entry:
   //     - Call UpcallLinker::on_entry to get thread pointer.
   //     - Store thread pointer in R16.
+  assert(NULL != NULL, "Entering on_entry");
   __ andi(rtmp1, rtmp1, 0);                     // rtmp1 <- 0
   __ add_const_optimized(rtmp1, rtmp1,          // rtmp1 <- &UpcallLinker::on_entry
                          CAST_FROM_FN_PTR(uint64_t, UpcallLinker::on_entry), rtmp2, false);
@@ -220,11 +221,9 @@ address UpcallLinker::make_upcall_stub(jobject receiver, Method* entry,
   __ mr(R16_thread, R3);                        // R16 <- thread_ptr
   __ block_comment("} on_entry");
 
-  __ should_not_reach_here();
-
   __ block_comment("{ argument shuffle");
   //     Argument Shuffle
-  //     TODO: What does this do?
+  assert(NULL != NULL, "Entering arg shuffle");
   arg_spilller.generate_fill(_masm, arg_save_area_offset);
   if (needs_return_buffer) {
     assert(ret_buf_offset != -1, "no return buffer allocated");
@@ -237,6 +236,7 @@ address UpcallLinker::make_upcall_stub(jobject receiver, Method* entry,
   __ block_comment("{ receiver ");
   //     Receiver
   //     - Load reciever (JObject) metadata
+  assert(NULL != NULL, "Entering receiver");
   __ add_const_optimized(rshuffle, rshuffle,        // rshuffle <- &reciever
                          receiver, rtmp1, false);
   __ resolve_jobject(rshuffle, rtmp1,        // rshuffle <- resolved oop with base rshuffle
