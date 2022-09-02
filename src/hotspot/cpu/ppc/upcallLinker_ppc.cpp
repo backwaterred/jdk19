@@ -239,6 +239,7 @@ address UpcallLinker::make_upcall_stub(jobject receiver, Method* entry,
   __ resolve_jobject(rshuffle, rtmp1,        // rshuffle <- resolved oop with base rshuffle
                      R14, MacroAssembler::PRESERVATION_FRAME_LR); // TODO: Set Preservation Level, R14 == nvtemp
   __ mr(R4, rshuffle);
+  __ should_not_reach_here();
   __ block_comment("} receiver ");
 
   __ block_comment("{ perform-upcall");
